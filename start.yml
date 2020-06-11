@@ -1,0 +1,6 @@
+- name: nginx
+  hosts: nginx
+  user: root
+  roles:
+    - nginx
+# ansible-playbook tracker.yml -i hosts/tracker --ask-su-pass

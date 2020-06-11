@@ -1,0 +1,65 @@
+---
+- name: apt-get upgrade
+  action: apt update_cache=yes upgrade=yes
+
+- name: Install aptitude (some ubuntus dont have it...)
+  command: apt-get -y install aptitude
+
+- name: Install essential packages
+  apt: pkg={{ item }} state=latest update_cache=yes install_recommends=yes
+  with_items:
+  - git
+  - python-apt  
+  - python-pycurl
+  - curl
+  - gcc
+  - build-essential
+  - php
+  - php-fpm
+
+
+- name: Install Deeps  to compile Nginx
+  apt: pkg={{ item }} state=latest update_cache=yes install_recommends=yes
+  with_items:  
+  - libpcre3
+  - libpcre3-dev
+  - libssl-dev
+
+- name: Clone nginx-rtmp-module
+  git: repo=https://github.com/sergey-dryabzhinsky/nginx-rtmp-module.git dest=/root/nginx-rtmp-module accept_hostkey=yes
+
+
+- name: download zlib
+  unarchive:
+    src: https://zlib.net/fossils/zlib-1.2.9.tar.gz
+    dest: /root/
+    remote_src: yes       
+
+- name: configure zlib
+  command: ./configure
+  args:
+    chdir: /root/zlib-1.2.9
+
+- name:  make install zlib
+  make:
+    chdir: /root/zlib-1.2.9
+    target: install
+
+- name: download nginx-1.14.2
+  unarchive:
+    src: http://nginx.org/download/nginx-1.14.2.tar.gz
+    dest: /root/
+    remote_src: yes
+
+- name: configure  nginx
+  command: ./configure --with-http_ssl_module --with-http_auth_request_module  --add-module=../nginx-rtmp-module  --with-zlib=../zlib-1.2.9 --with-pcre
+  args:
+    chdir: /root/nginx-1.14.2
+
+- name: make install nginx
+  make:
+    chdir: /root/nginx-1.14.2
+    target: install
+
+- name: Copy nginx config
+  copy: src=nginx.conf dest=/usr/local/nginx/conf/nginx.conf

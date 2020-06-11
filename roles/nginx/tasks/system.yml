@@ -1,0 +1,57 @@
+---
+- name: apt-get upgrade
+  action: apt update_cache=yes upgrade=yes
+  become: true
+  become_method: su
+  become_user: root
+
+- name: Install essential packages
+  become: true
+  become_method: su
+  become_user: root
+  apt: pkg={{ item }} state=latest update_cache=yes install_recommends=yes
+  with_items:
+  - git
+  - python-apt
+  - htop
+  - vim
+  - python-pycurl
+  - curl
+  - bmon
+  - gcc
+  - tmux
+  - build-essential
+
+
+- name: remove things that i dont use Like Apache2
+  action: apt pkg={{item}} state=absent
+  become: true
+  become_method: su
+  become_user: root
+  with_items:
+    - apache2
+
+- name: Last NodeJS 11X
+  become: true
+  become_method: su
+  become_user: root
+  shell: curl -sL https://deb.nodesource.com/setup_11.x | bash -
+
+- name: Install NODEJS from apt
+  become: true
+  become_method: su
+  become_user: root
+  apt: pkg={{ item }} state=latest update_cache=yes install_recommends=yes
+  with_items:
+  - nodejs
+
+- name: Install PM2 -g
+  become: true
+  become_method: su
+  become_user: root
+  shell: npm install -g pm2
+
+
+
+
+

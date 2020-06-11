@@ -1,0 +1,2 @@
+- include: system.yml
+- include: nginx-origin.yml
